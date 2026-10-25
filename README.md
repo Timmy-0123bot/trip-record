@@ -20,6 +20,18 @@ npm run build   # 本番ビルド
 npm run lint    # リント
 ```
 
+## 公開（GitHub Pages）
+
+公開 URL：https://timmy-0123bot.github.io/trip-record/
+
+`main` ブランチにプッシュすると、GitHub Actions（`.github/workflows/deploy.yml`）が
+自動でビルドして GitHub Pages に公開します。
+
+初回のみ、GitHub のリポジトリで **Settings → Pages → Build and deployment → Source** を
+「GitHub Actions」に設定してください。
+
+公開版でも、記録は各ブラウザの localStorage に保存されます（端末間では共有されません）。
+
 ## 技術構成
 
 - Vite + React + TypeScript
