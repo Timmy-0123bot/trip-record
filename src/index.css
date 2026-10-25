@@ -155,12 +155,26 @@ button.link:hover {
   transition: width 0.3s ease;
 }
 
-/* 地方ごとの訪問数（広い画面では2列） */
-.region-stats {
+/* 地方ごとの訪問数（普段は折りたたみ、広い画面では2列） */
+.region-section {
   grid-column: 1 / -1;
+  font-size: 0.9rem;
+}
+
+.region-section > summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.region-summary-note {
+  margin-left: 4px;
+  font-size: 0.85rem;
+}
+
+.region-stats {
   list-style: none;
   padding: 0;
-  margin: 4px 0 0;
+  margin: 8px 0 0;
 }
 
 /* 2列のときは北から南へ縦に読めるよう段組みにする（片方の列を開いても、もう片方はずれない） */
