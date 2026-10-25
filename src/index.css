@@ -9,6 +9,7 @@
   --pref-fill: #e8e5de;
   --pref-stroke: #ffffff;
   --visited: #e8735a;
+  --marked: #f5bfae;
   --selected-stroke: #1f4e79;
   --danger: #c0392b;
 
@@ -29,6 +30,7 @@
     --pref-fill: #3a3835;
     --pref-stroke: #1b1a19;
     --visited: #e07a5f;
+    --marked: #8a5244;
     --selected-stroke: #8fc1ec;
     color-scheme: dark;
   }
@@ -226,6 +228,39 @@ button.link:hover {
   fill: var(--visited);
 }
 
+.pref.marked {
+  fill: var(--marked);
+}
+
+/* 印を付けるモード中は地図を点線で囲んで、通常時と区別する */
+.japan-map.mark-mode {
+  outline: 2px dashed var(--visited);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.map-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.mark-toggle {
+  font-size: 0.9rem;
+}
+
+.map-hint {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.map-notice {
+  min-height: 1.4em;
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+}
+
 .pref.selected,
 .pref:focus-visible {
   stroke: var(--selected-stroke);
@@ -234,10 +269,11 @@ button.link:hover {
 
 .legend {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   list-style: none;
   padding: 0;
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   font-size: 0.85rem;
   color: var(--muted);
 }
@@ -258,6 +294,10 @@ button.link:hover {
 
 .swatch.visited {
   background: var(--visited);
+}
+
+.swatch.marked {
+  background: var(--marked);
 }
 
 /* 旅行一覧 */

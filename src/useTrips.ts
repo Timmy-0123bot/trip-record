@@ -16,38 +16,52 @@ export function tripTitle(trip: Trip): string {
   return trip.title || 'タイトルなし'
 }
 
-const STORAGE_KEY = 'trip-record:trips:v1'
+const TRIPS_KEY = 'trip-record:trips:v1'
+// 旅行記録はないが「行ったことがある」と印を付けた都道府県
+const MARKS_KEY = 'trip-record:marks:v1'
 
-function loadTrips(): Trip[] {
+function loadArray<T>(key: string): T[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(key)
     if (!raw) return []
     const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as Trip[]) : []
+    return Array.isArray(parsed) ? (parsed as T[]) : []
   } catch {
     return []
   }
 }
 
-function saveTrips(trips: Trip[]) {
+function saveArray(key: string, value: unknown[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trips))
+    localStorage.setItem(key, JSON.stringify(value))
   } catch {
     // 保存できない環境（プライベートモード等）では画面上の状態だけ保持する
   }
 }
 
-// 旅行記録の一覧と、訪問済み都道府県の集計を扱うフック（データは localStorage に保存）
+// 旅行記録・訪問の印と、訪問済み都道府県の集計を扱うフック（データは localStorage に保存）
 export function useTrips() {
-  const [trips, setTrips] = useState<Trip[]>(loadTrips)
+  const [trips, setTrips] = useState<Trip[]>(() => loadArray(TRIPS_KEY))
+  const [markedIds, setMarkedIds] = useState<number[]>(() => loadArray(MARKS_KEY))
 
   useEffect(() => {
-    saveTrips(trips)
+    saveArray(TRIPS_KEY, trips)
   }, [trips])
 
-  const visitedIds = useMemo(
+  useEffect(() => {
+    saveArray(MARKS_KEY, markedIds)
+  }, [markedIds])
+
+  // 旅行記録に含まれる都道府県
+  const tripPrefectureIds = useMemo(
     () => new Set(trips.flatMap((t) => t.prefectureIds)),
     [trips],
+  )
+
+  // 訪問済み = 旅行記録のある都道府県 + 印を付けた都道府県
+  const visitedIds = useMemo(
+    () => new Set([...tripPrefectureIds, ...markedIds]),
+    [tripPrefectureIds, markedIds],
   )
 
   const addTrip = (input: TripInput) =>
@@ -59,12 +73,29 @@ export function useTrips() {
   const deleteTrip = (id: string) =>
     setTrips((prev) => prev.filter((t) => t.id !== id))
 
-  // バックアップから読み込んだ記録を統合し、追加・上書きした件数を返す
-  const importTrips = (incoming: Trip[]) => {
-    const { merged, added, updated } = mergeTrips(trips, incoming)
+  const toggleMark = (id: number) =>
+    setMarkedIds((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id].sort((a, b) => a - b),
+    )
+
+  // バックアップから読み込んだ記録と印を統合し、追加・上書きした件数を返す
+  const importData = (incoming: { trips: Trip[]; markedIds: number[] }) => {
+    const { merged, added, updated } = mergeTrips(trips, incoming.trips)
+    const newMarks = incoming.markedIds.filter((id) => !markedIds.includes(id))
     setTrips(merged)
-    return { added, updated }
+    setMarkedIds([...markedIds, ...newMarks].sort((a, b) => a - b))
+    return { added, updated, addedMarks: newMarks.length }
   }
 
-  return { trips, visitedIds, addTrip, updateTrip, deleteTrip, importTrips }
+  return {
+    trips,
+    markedIds,
+    tripPrefectureIds,
+    visitedIds,
+    addTrip,
+    updateTrip,
+    deleteTrip,
+    toggleMark,
+    importData,
+  }
 }

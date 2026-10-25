@@ -21,10 +21,22 @@ const emptyInput = (prefectureIds: number[] = []): TripInput => ({
 })
 
 function App() {
-  const { trips, visitedIds, addTrip, updateTrip, deleteTrip, importTrips } =
-    useTrips()
+  const {
+    trips,
+    markedIds,
+    tripPrefectureIds,
+    visitedIds,
+    addTrip,
+    updateTrip,
+    deleteTrip,
+    toggleMark,
+    importData,
+  } = useTrips()
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [form, setForm] = useState<FormState>({ mode: 'closed' })
+  // 地図クリック時の動作：県の選択 / 「行ったことがある」の印の付け外し
+  const [mapMode, setMapMode] = useState<'select' | 'mark'>('select')
+  const [mapNotice, setMapNotice] = useState('')
 
   const visitedCount = visitedIds.size
   const remainingCount = PREFECTURE_COUNT - visitedCount
@@ -35,8 +47,29 @@ function App() {
       ? trips
       : trips.filter((t) => t.prefectureIds.includes(selectedId))
 
-  const handleSelect = (id: number) =>
-    setSelectedId((cur) => (cur === id ? null : id))
+  const handleMapClick = (id: number) => {
+    if (mapMode === 'select') {
+      setSelectedId((cur) => (cur === id ? null : id))
+      return
+    }
+    const name = prefectureName(id)
+    if (tripPrefectureIds.has(id)) {
+      setMapNotice(`${name}は旅行記録があるため、すでに訪問済みです`)
+      return
+    }
+    toggleMark(id)
+    setMapNotice(
+      markedIds.includes(id)
+        ? `${name}の印を外しました`
+        : `${name}を「行ったことがある」にしました`,
+    )
+  }
+
+  const toggleMapMode = () => {
+    setMapMode((m) => (m === 'select' ? 'mark' : 'select'))
+    setSelectedId(null)
+    setMapNotice('')
+  }
 
   const handleSubmit = (input: TripInput) => {
     if (form.mode === 'edit') updateTrip(form.trip.id, input)
@@ -95,15 +128,38 @@ function App() {
 
       <main className="layout">
         <section className="map-panel">
+          <div className="map-toolbar">
+            <button
+              className={mapMode === 'mark' ? 'mark-toggle on' : 'mark-toggle secondary'}
+              aria-pressed={mapMode === 'mark'}
+              onClick={toggleMapMode}
+            >
+              {mapMode === 'mark' ? '✓ 印を付け終わる' : 'タップで訪問済みにする'}
+            </button>
+          </div>
+          {mapMode === 'mark' && (
+            <p className="map-hint">
+              都道府県をタップすると「行ったことがある」の印を付け外しできます
+            </p>
+          )}
           <JapanMap
-            visitedIds={visitedIds}
+            tripIds={tripPrefectureIds}
+            markedIds={new Set(markedIds)}
             selectedId={selectedId}
-            onSelect={handleSelect}
+            mode={mapMode}
+            onClick={handleMapClick}
           />
+          <p className="map-notice" role="status">
+            {mapNotice}
+          </p>
           <ul className="legend">
             <li>
               <span className="swatch visited" />
-              訪問済み
+              旅行記録あり
+            </li>
+            <li>
+              <span className="swatch marked" />
+              行ったことがある
             </li>
             <li>
               <span className="swatch" />
@@ -163,7 +219,7 @@ function App() {
         </section>
       </main>
 
-      <BackupPanel trips={trips} onImport={importTrips} />
+      <BackupPanel trips={trips} markedIds={markedIds} onImport={importData} />
 
       <footer className="app-footer">
         地図データ出典：地球地図日本（国土地理院）／

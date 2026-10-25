@@ -4,7 +4,12 @@ import type { Trip } from '../useTrips'
 
 type Props = {
   trips: Trip[]
-  onImport: (trips: Trip[]) => { added: number; updated: number }
+  markedIds: number[]
+  onImport: (data: { trips: Trip[]; markedIds: number[] }) => {
+    added: number
+    updated: number
+    addedMarks: number
+  }
 }
 
 type Message = { kind: 'success' | 'error'; text: string }
@@ -15,14 +20,17 @@ function formatDateTime(iso: string) {
   return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export function BackupPanel({ trips, onImport }: Props) {
+export function BackupPanel({ trips, markedIds, onImport }: Props) {
   const [lastBackupAt, setLastBackupAt] = useState(loadLastBackupAt)
   const [message, setMessage] = useState<Message | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
   const handleDownload = () => {
-    setLastBackupAt(downloadBackup(trips))
-    setMessage({ kind: 'success', text: `${trips.length}件の記録をファイルに保存しました` })
+    setLastBackupAt(downloadBackup(trips, markedIds))
+    setMessage({
+      kind: 'success',
+      text: `記録${trips.length}件・印${markedIds.length}件をファイルに保存しました`,
+    })
   }
 
   const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -36,23 +44,23 @@ export function BackupPanel({ trips, onImport }: Props) {
       setMessage({ kind: 'error', text: result.message })
       return
     }
-    if (result.trips.length === 0) {
+    if (result.trips.length === 0 && result.markedIds.length === 0) {
       setMessage({ kind: 'error', text: 'ファイルに読み込める記録がありませんでした' })
       return
     }
     if (
       !window.confirm(
-        `${result.trips.length}件の記録を読み込みます。\n今ある記録は消えず、同じ記録はファイルの内容で上書きされます。よろしいですか？`,
+        `記録${result.trips.length}件・印${result.markedIds.length}件を読み込みます。\n今ある記録は消えず、同じ記録はファイルの内容で上書きされます。よろしいですか？`,
       )
     ) {
       return
     }
 
-    const { added, updated } = onImport(result.trips)
+    const { added, updated, addedMarks } = onImport(result)
     const skipped = result.skipped > 0 ? `（読み込めなかった記録：${result.skipped}件）` : ''
     setMessage({
       kind: 'success',
-      text: `復元しました：新規 ${added}件・上書き ${updated}件${skipped}`,
+      text: `復元しました：記録 新規${added}件・上書き${updated}件、印 新規${addedMarks}件${skipped}`,
     })
   }
 
@@ -68,7 +76,10 @@ export function BackupPanel({ trips, onImport }: Props) {
         {lastBackupAt ? formatDateTime(lastBackupAt) : 'まだありません'}
       </p>
       <div className="backup-actions">
-        <button onClick={handleDownload} disabled={trips.length === 0}>
+        <button
+          onClick={handleDownload}
+          disabled={trips.length === 0 && markedIds.length === 0}
+        >
           ファイルに保存
         </button>
         <button className="secondary" onClick={() => fileInput.current?.click()}>

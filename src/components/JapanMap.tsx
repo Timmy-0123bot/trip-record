@@ -61,12 +61,21 @@ function buildProjections(): { main: GeoProjection; okinawa: GeoProjection } {
 }
 
 type Props = {
-  visitedIds: Set<number>
+  tripIds: Set<number> // 旅行記録のある都道府県
+  markedIds: Set<number> // 「行ったことがある」の印を付けた都道府県
   selectedId: number | null
-  onSelect: (id: number) => void
+  // select：クリックでその県を選択 / mark：クリックで印を付け外し
+  mode: 'select' | 'mark'
+  onClick: (id: number) => void
 }
 
-export function JapanMap({ visitedIds, selectedId, onSelect }: Props) {
+function statusOf(id: number, tripIds: Set<number>, markedIds: Set<number>) {
+  if (tripIds.has(id)) return { className: 'visited', label: '旅行記録あり' }
+  if (markedIds.has(id)) return { className: 'marked', label: '行ったことがある' }
+  return { className: '', label: '未訪問' }
+}
+
+export function JapanMap({ tripIds, markedIds, selectedId, mode, onClick }: Props) {
   const paths = useMemo(() => {
     const { main, okinawa } = buildProjections()
     const mainPath = geoPath(main)
@@ -80,10 +89,14 @@ export function JapanMap({ visitedIds, selectedId, onSelect }: Props) {
 
   return (
     <svg
-      className="japan-map"
+      className={`japan-map ${mode === 'mark' ? 'mark-mode' : ''}`}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="group"
-      aria-label="日本地図（都道府県をクリックで選択）"
+      aria-label={
+        mode === 'mark'
+          ? '日本地図（都道府県をクリックで「行ったことがある」を付け外し）'
+          : '日本地図（都道府県をクリックで選択）'
+      }
     >
       <rect
         className="inset-frame"
@@ -95,8 +108,13 @@ export function JapanMap({ visitedIds, selectedId, onSelect }: Props) {
       />
       {paths.map(({ id, d }) => {
         const name = prefectureName(id)
-        const visited = visitedIds.has(id)
-        const classes = ['pref', visited && 'visited', selectedId === id && 'selected']
+        const status = statusOf(id, tripIds, markedIds)
+        const pressed = mode === 'mark' ? markedIds.has(id) : selectedId === id
+        const classes = [
+          'pref',
+          status.className,
+          mode === 'select' && selectedId === id && 'selected',
+        ]
           .filter(Boolean)
           .join(' ')
         return (
@@ -106,13 +124,13 @@ export function JapanMap({ visitedIds, selectedId, onSelect }: Props) {
             className={classes}
             tabIndex={0}
             role="button"
-            aria-label={`${name}（${visited ? '訪問済み' : '未訪問'}）`}
-            aria-pressed={selectedId === id}
-            onClick={() => onSelect(id)}
+            aria-label={`${name}（${status.label}）`}
+            aria-pressed={pressed}
+            onClick={() => onClick(id)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                onSelect(id)
+                onClick(id)
               }
             }}
           >

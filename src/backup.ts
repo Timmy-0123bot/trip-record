@@ -7,6 +7,8 @@ type BackupFile = {
   version: 1
   exportedAt: string
   trips: Trip[]
+  // 「行ったことがある」の印（この項目がない古いバックアップは印なしとして扱う）
+  markedIds?: number[]
 }
 
 const LAST_BACKUP_KEY = 'trip-record:lastBackupAt'
@@ -32,14 +34,15 @@ function dateString(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
-// 記録を JSON ファイルとしてダウンロードし、保存日時を返す
-export function downloadBackup(trips: Trip[]): string {
+// 記録と印を JSON ファイルとしてダウンロードし、保存日時を返す
+export function downloadBackup(trips: Trip[], markedIds: number[]): string {
   const now = new Date()
   const data: BackupFile = {
     app: 'trip-record',
     version: 1,
     exportedAt: now.toISOString(),
     trips,
+    markedIds,
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: 'application/json',
@@ -80,7 +83,7 @@ function toTrip(v: unknown): Trip | null {
 }
 
 export type ParseResult =
-  | { ok: true; trips: Trip[]; skipped: number }
+  | { ok: true; trips: Trip[]; markedIds: number[]; skipped: number }
   | { ok: false; message: string }
 
 // バックアップファイルの中身を読み取る。壊れた記録は読み飛ばし、その件数を返す
@@ -99,7 +102,10 @@ export function parseBackup(text: string): ParseResult {
     return { ok: false, message: 'このバージョンのバックアップファイルには対応していません' }
   }
   const trips = file.trips.map(toTrip).filter((t): t is Trip => t !== null)
-  return { ok: true, trips, skipped: file.trips.length - trips.length }
+  const markedIds = Array.isArray(file.markedIds)
+    ? [...new Set(file.markedIds.filter(isPrefectureId))]
+    : []
+  return { ok: true, trips, markedIds, skipped: file.trips.length - trips.length }
 }
 
 // 現在の記録にバックアップを統合する（同じ id はバックアップで上書き、無いものは追加、既存は消さない）
