@@ -1,5 +1,5 @@
 import { prefectureName } from '../prefectures'
-import type { Trip } from '../useTrips'
+import { tripTitle, type Trip } from '../useTrips'
 
 type Props = {
   trips: Trip[]
@@ -8,11 +8,15 @@ type Props = {
   onDelete: (trip: Trip) => void
 }
 
+// 日付は任意入力のため、出発日・帰着日のどちらか（または両方）が空の場合がある
 function formatPeriod(trip: Trip) {
   const fmt = (d: string) => d.replaceAll('-', '/')
-  return trip.endDate && trip.endDate !== trip.startDate
-    ? `${fmt(trip.startDate)} 〜 ${fmt(trip.endDate)}`
-    : fmt(trip.startDate)
+  const { startDate, endDate } = trip
+  if (!startDate && !endDate) return '日付未設定'
+  if (!startDate) return `〜 ${fmt(endDate)}`
+  return endDate && endDate !== startDate
+    ? `${fmt(startDate)} 〜 ${fmt(endDate)}`
+    : fmt(startDate)
 }
 
 export function TripList({ trips, emptyMessage, onEdit, onDelete }: Props) {
@@ -20,15 +24,18 @@ export function TripList({ trips, emptyMessage, onEdit, onDelete }: Props) {
     return <p className="empty">{emptyMessage}</p>
   }
 
-  // 新しい旅行が上に来るように並べる
-  const sorted = [...trips].sort((a, b) => b.startDate.localeCompare(a.startDate))
+  // 新しい旅行が上に来るように並べる（日付のない記録は最後）
+  const dateOf = (t: Trip) => t.startDate || t.endDate
+  const sorted = [...trips].sort((a, b) => dateOf(b).localeCompare(dateOf(a)))
 
   return (
     <ul className="trip-list">
       {sorted.map((trip) => (
         <li key={trip.id} className="trip-card">
           <div className="trip-head">
-            <h3>{trip.title}</h3>
+            <h3 className={trip.title ? undefined : 'untitled'}>
+              {tripTitle(trip)}
+            </h3>
             <span className="trip-date">{formatPeriod(trip)}</span>
           </div>
           <p className="trip-prefs">

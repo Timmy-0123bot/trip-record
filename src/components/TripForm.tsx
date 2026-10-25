@@ -29,9 +29,7 @@ export function TripForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
-    if (!title.trim()) return setError('タイトルを入力してください')
-    if (!startDate) return setError('出発日を入力してください')
-    if (endDate && endDate < startDate)
+    if (startDate && endDate && endDate < startDate)
       return setError('帰着日は出発日以降にしてください')
     if (prefectureIds.length === 0)
       return setError('訪れた都道府県を1つ以上選んでください')
@@ -41,7 +39,7 @@ export function TripForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
   return (
     <form className="trip-form" onSubmit={handleSubmit} noValidate>
       <label>
-        タイトル
+        タイトル（任意）
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -51,7 +49,7 @@ export function TripForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
 
       <div className="date-row">
         <label>
-          出発日
+          出発日（任意）
           <input
             type="date"
             value={startDate}

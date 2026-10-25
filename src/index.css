@@ -306,6 +306,11 @@ button.link:hover {
   font-size: 1.05rem;
 }
 
+.trip-head h3.untitled {
+  color: var(--muted);
+  font-weight: 500;
+}
+
 .trip-date {
   font-size: 0.85rem;
   color: var(--muted);

@@ -2,14 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 
 export type Trip = {
   id: string
-  title: string
-  startDate: string // YYYY-MM-DD
-  endDate: string // YYYY-MM-DD（日帰りなら空でもよい）
+  title: string // 任意（空文字の場合あり）
+  startDate: string // YYYY-MM-DD（任意）
+  endDate: string // YYYY-MM-DD（任意。日帰りなら空でもよい）
   prefectureIds: number[]
   memo: string
 }
 
 export type TripInput = Omit<Trip, 'id'>
+
+export function tripTitle(trip: Trip): string {
+  return trip.title || 'タイトルなし'
+}
 
 const STORAGE_KEY = 'trip-record:trips:v1'
 

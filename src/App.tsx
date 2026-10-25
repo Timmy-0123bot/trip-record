@@ -3,7 +3,7 @@ import { JapanMap } from './components/JapanMap'
 import { TripForm } from './components/TripForm'
 import { TripList } from './components/TripList'
 import { PREFECTURES, PREFECTURE_COUNT, prefectureName } from './prefectures'
-import { useTrips, type Trip, type TripInput } from './useTrips'
+import { tripTitle, useTrips, type Trip, type TripInput } from './useTrips'
 
 // フォームの状態：閉じている / 新規作成 / 既存の旅行を編集
 type FormState =
@@ -43,7 +43,7 @@ function App() {
   }
 
   const handleDelete = (trip: Trip) => {
-    if (window.confirm(`「${trip.title}」を削除しますか？`)) deleteTrip(trip.id)
+    if (window.confirm(`「${tripTitle(trip)}」を削除しますか？`)) deleteTrip(trip.id)
   }
 
   return (
