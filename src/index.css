@@ -345,7 +345,8 @@ button.link:hover {
   margin-top: 12px;
 }
 
-.trip-form label {
+.trip-form label,
+.trip-form .field {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -370,6 +371,51 @@ button.link:hover {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
+}
+
+.pref-search {
+  position: relative;
+}
+
+.pref-options {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  font-weight: normal;
+}
+
+.pref-options li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pref-options li.active {
+  background: var(--bg);
+  color: var(--accent-strong);
+}
+
+.pref-option-region {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.pref-options .pref-option-empty {
+  color: var(--muted);
+  cursor: default;
 }
 
 .chips {

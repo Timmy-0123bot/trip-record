@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { PREFECTURES, REGIONS, prefectureName } from '../prefectures'
+import { prefectureName } from '../prefectures'
 import type { TripInput } from '../useTrips'
+import { PrefectureSearch } from './PrefectureSearch'
 
 type Props = {
   initial: TripInput
@@ -68,28 +69,15 @@ export function TripForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
         </label>
       </div>
 
-      <label>
-        訪れた都道府県
-        <select
-          value=""
-          onChange={(e) => addPrefecture(Number(e.target.value))}
-        >
-          <option value="">追加する都道府県を選択…</option>
-          {REGIONS.map((region) => (
-            <optgroup key={region} label={region}>
-              {PREFECTURES.filter((p) => p.region === region).map((p) => (
-                <option
-                  key={p.id}
-                  value={p.id}
-                  disabled={prefectureIds.includes(p.id)}
-                >
-                  {p.name}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </label>
+      {/* 候補一覧のクリックが label 経由で入力欄に転送されないよう、label で囲まない */}
+      <div className="field">
+        <label htmlFor="pref-search">訪れた都道府県</label>
+        <PrefectureSearch
+          inputId="pref-search"
+          selectedIds={prefectureIds}
+          onAdd={addPrefecture}
+        />
+      </div>
       {prefectureIds.length > 0 && (
         <ul className="chips">
           {prefectureIds.map((id) => (
