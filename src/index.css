@@ -1,0 +1,423 @@
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --text: #2b2a28;
+  --muted: #6f6c66;
+  --border: #e2dfd8;
+  --accent: #d9534f;
+  --accent-strong: #b8403c;
+  --pref-fill: #e8e5de;
+  --pref-stroke: #ffffff;
+  --visited: #e8735a;
+  --selected-stroke: #1f4e79;
+  --danger: #c0392b;
+
+  font-family: system-ui, 'Hiragino Sans', 'Yu Gothic UI', 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1a19;
+    --surface: #262523;
+    --text: #ece9e3;
+    --muted: #a39f97;
+    --border: #3a3835;
+    --pref-fill: #3a3835;
+    --pref-stroke: #1b1a19;
+    --visited: #e07a5f;
+    --selected-stroke: #8fc1ec;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+button.danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--border);
+}
+
+button.link {
+  background: none;
+  color: var(--muted);
+  padding: 0;
+  font-weight: normal;
+  margin-bottom: 12px;
+}
+
+button.secondary:hover,
+button.danger:hover {
+  background: var(--bg);
+}
+
+button.link:hover {
+  background: none;
+  text-decoration: underline;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.subtitle {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+/* 訪問状況 */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-value small {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.progress {
+  grid-column: 1 / -1;
+  height: 10px;
+  background: var(--pref-fill);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--visited);
+  transition: width 0.3s ease;
+}
+
+.unvisited,
+.complete {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.unvisited summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.unvisited p {
+  margin: 8px 0 0;
+}
+
+/* レイアウト */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 860px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .map-panel {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+.map-panel,
+.trips-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* 地図 */
+.japan-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.inset-frame {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.pref {
+  fill: var(--pref-fill);
+  stroke: var(--pref-stroke);
+  stroke-width: 0.6;
+  cursor: pointer;
+  outline: none;
+  transition: fill 0.15s ease;
+}
+
+.pref:hover {
+  filter: brightness(0.92);
+}
+
+.pref.visited {
+  fill: var(--visited);
+}
+
+.pref.selected,
+.pref:focus-visible {
+  stroke: var(--selected-stroke);
+  stroke-width: 2;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--pref-fill);
+  border: 1px solid var(--border);
+}
+
+.swatch.visited {
+  background: var(--visited);
+}
+
+/* 旅行一覧 */
+.trips-panel h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.trips-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+.trip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trip-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.trip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.trip-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.trip-date {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.trip-prefs {
+  margin: 4px 0 0;
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.trip-memo {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+}
+
+.trip-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.trip-actions button {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+
+/* フォーム */
+.trip-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.trip-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.trip-form input,
+.trip-form select,
+.trip-form textarea {
+  font: inherit;
+  font-weight: normal;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+}
+
+.date-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: -4px 0 0;
+}
+
+.chips li {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--visited);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 4px 2px 10px;
+  font-size: 0.85rem;
+}
+
+.chips button {
+  background: none;
+  padding: 0 6px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.app-footer {
+  margin-top: 24px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.app-footer a {
+  color: inherit;
+}
