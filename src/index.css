@@ -462,6 +462,51 @@ button.link:hover {
   gap: 8px;
 }
 
+/* バックアップ */
+.backup-panel {
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.backup-panel h2 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+}
+
+.backup-note,
+.backup-last {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.backup-message {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+}
+
+.backup-message.success {
+  color: var(--text);
+}
+
+.backup-message.error {
+  color: var(--danger);
+}
+
 .app-footer {
   margin-top: 24px;
   font-size: 0.75rem;

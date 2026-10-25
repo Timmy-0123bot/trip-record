@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { mergeTrips } from './backup'
 
 export type Trip = {
   id: string
@@ -58,5 +59,12 @@ export function useTrips() {
   const deleteTrip = (id: string) =>
     setTrips((prev) => prev.filter((t) => t.id !== id))
 
-  return { trips, visitedIds, addTrip, updateTrip, deleteTrip }
+  // バックアップから読み込んだ記録を統合し、追加・上書きした件数を返す
+  const importTrips = (incoming: Trip[]) => {
+    const { merged, added, updated } = mergeTrips(trips, incoming)
+    setTrips(merged)
+    return { added, updated }
+  }
+
+  return { trips, visitedIds, addTrip, updateTrip, deleteTrip, importTrips }
 }

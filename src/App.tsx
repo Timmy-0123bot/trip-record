@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BackupPanel } from './components/BackupPanel'
 import { JapanMap } from './components/JapanMap'
 import { TripForm } from './components/TripForm'
 import { TripList } from './components/TripList'
@@ -20,7 +21,8 @@ const emptyInput = (prefectureIds: number[] = []): TripInput => ({
 })
 
 function App() {
-  const { trips, visitedIds, addTrip, updateTrip, deleteTrip } = useTrips()
+  const { trips, visitedIds, addTrip, updateTrip, deleteTrip, importTrips } =
+    useTrips()
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [form, setForm] = useState<FormState>({ mode: 'closed' })
 
@@ -160,6 +162,8 @@ function App() {
           )}
         </section>
       </main>
+
+      <BackupPanel trips={trips} onImport={importTrips} />
 
       <footer className="app-footer">
         地図データ出典：地球地図日本（国土地理院）／
