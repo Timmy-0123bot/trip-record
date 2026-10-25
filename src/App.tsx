@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BackupPanel } from './components/BackupPanel'
 import { JapanMap } from './components/JapanMap'
+import { RegionStats } from './components/RegionStats'
 import { TripForm } from './components/TripForm'
 import { TripList } from './components/TripList'
 import { PREFECTURES, PREFECTURE_COUNT, prefectureName } from './prefectures'
@@ -116,6 +117,7 @@ function App() {
             style={{ width: `${(visitedCount / PREFECTURE_COUNT) * 100}%` }}
           />
         </div>
+        <RegionStats visitedIds={visitedIds} />
         {remainingCount === 0 ? (
           <p className="complete">🎉 全47都道府県を制覇しました！</p>
         ) : (

@@ -155,6 +155,89 @@ button.link:hover {
   transition: width 0.3s ease;
 }
 
+/* 地方ごとの訪問数（広い画面では2列） */
+.region-stats {
+  grid-column: 1 / -1;
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+}
+
+/* 2列のときは北から南へ縦に読めるよう段組みにする（片方の列を開いても、もう片方はずれない） */
+@media (min-width: 640px) {
+  .region-stats {
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  .region-stats li {
+    break-inside: avoid;
+  }
+}
+
+.region summary {
+  display: grid;
+  grid-template-columns: 7em minmax(0, 1fr) 4.5em;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.region summary::-webkit-details-marker {
+  display: none;
+}
+
+.region-name::before {
+  content: '▸ ';
+  color: var(--muted);
+}
+
+.region[open] .region-name::before {
+  content: '▾ ';
+}
+
+.region-bar {
+  height: 8px;
+  background: var(--pref-fill);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.region-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--visited);
+}
+
+.region-count {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.region-badge {
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--visited);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.region.complete .region-name {
+  font-weight: 700;
+}
+
+.region-detail {
+  margin: 0 0 6px;
+  padding-left: 1.2em;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 .unvisited,
 .complete {
   grid-column: 1 / -1;
