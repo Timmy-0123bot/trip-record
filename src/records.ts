@@ -22,6 +22,8 @@ export type RecordStore = {
   tripsKey: string
   marksKey: string
   placeField: 'prefectureIds' | 'countryCodes'
+  // お試しモード用：ここにデータがあれば localStorage を読まず、変更も保存しない
+  sample?: { trips: Record<string, unknown>[]; markedIds: PlaceId[] }
 }
 
 export const DOMESTIC_STORE: RecordStore = {
@@ -86,13 +88,16 @@ export type ImportResult = { added: number; updated: number; addedMarks: number 
 // 旅行記録・「行ったことがある」の印と、訪問済みの場所の集計を扱うフック（localStorage に保存）
 export function usePlaceRecords<Id extends PlaceId>(store: RecordStore) {
   const [trips, setTrips] = useState<TripRecord<Id>[]>(() =>
-    loadArray<Record<string, unknown>>(store.tripsKey).map((raw) =>
+    (store.sample?.trips ?? loadArray<Record<string, unknown>>(store.tripsKey)).map((raw) =>
       fromStored<Id>(raw, store.placeField),
     ),
   )
-  const [markedIds, setMarkedIds] = useState<Id[]>(() => loadArray(store.marksKey))
+  const [markedIds, setMarkedIds] = useState<Id[]>(
+    () => (store.sample?.markedIds as Id[] | undefined) ?? loadArray(store.marksKey),
+  )
 
   useEffect(() => {
+    if (store.sample) return
     saveArray(
       store.tripsKey,
       trips.map((t) => toStored(t, store.placeField)),
@@ -100,6 +105,7 @@ export function usePlaceRecords<Id extends PlaceId>(store: RecordStore) {
   }, [trips, store])
 
   useEffect(() => {
+    if (store.sample) return
     saveArray(store.marksKey, markedIds)
   }, [markedIds, store])
 

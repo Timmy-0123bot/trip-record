@@ -9,6 +9,7 @@ import { EARTH_CIRCUMFERENCE_KM, formatKm, totalDistanceKm, tripDistanceKm } fro
 import { labelOf } from './places'
 import { domesticCatalog } from './prefectures'
 import { DOMESTIC_STORE, OVERSEAS_STORE, usePlaceRecords } from './records'
+import { SAMPLE_DOMESTIC_STORE, SAMPLE_OVERSEAS_STORE } from './sample'
 
 type Tab = 'domestic' | 'overseas'
 
@@ -36,12 +37,21 @@ function saveTab(tab: Tab) {
   }
 }
 
-function App() {
-  const domestic = usePlaceRecords<number>(DOMESTIC_STORE)
-  const overseas = usePlaceRecords<string>(OVERSEAS_STORE)
+type WorkspaceProps = {
+  sampleMode: boolean
+  onTrySample: () => void
+}
+
+// タブ・各タブの中身・バックアップ。お試しモードではサンプルデータを使い、変更は保存しない
+function Workspace({ sampleMode, onTrySample }: WorkspaceProps) {
+  const domestic = usePlaceRecords<number>(sampleMode ? SAMPLE_DOMESTIC_STORE : DOMESTIC_STORE)
+  const overseas = usePlaceRecords<string>(sampleMode ? SAMPLE_OVERSEAS_STORE : OVERSEAS_STORE)
   const [tab, setTab] = useState<Tab>(loadTab)
 
-  // 訪問した「地域」（台湾・香港など。訪問国数には含めない）
+  const isEmpty =
+    domestic.trips.length + domestic.markedIds.length + overseas.trips.length + overseas.markedIds.length ===
+    0
+
   // 訪問数の内訳（国と地域）
   const countries = COUNTRIES.filter((c) => !c.isRegion)
   const regions = COUNTRIES.filter((c) => c.isRegion)
@@ -74,11 +84,15 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>trip-record</h1>
-        <p className="subtitle">国内・海外旅行の記録</p>
-      </header>
+    <>
+      {isEmpty && !sampleMode && (
+        <section className="welcome">
+          <p>
+            まだ記録がありません。サンプルデータで、地図の塗り分けや訪問数・移動距離の表示を試せます。
+          </p>
+          <button onClick={onTrySample}>サンプルデータで試す</button>
+        </section>
+      )}
 
       <div className="tabs" role="tablist" aria-label="記録の種類">
         {TABS.map(({ id, label }) => (
@@ -160,7 +174,37 @@ function App() {
         )}
       </div>
 
-      <BackupPanel data={backupData} onImport={handleImport} />
+      {!sampleMode && <BackupPanel data={backupData} onImport={handleImport} />}
+    </>
+  )
+}
+
+function App() {
+  // お試しモード（サンプルデータを表示中か）。再読み込みすると通常に戻る
+  const [sampleMode, setSampleMode] = useState(false)
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>trip-record</h1>
+        <p className="subtitle">国内・海外旅行の記録</p>
+      </header>
+
+      {sampleMode && (
+        <div className="sample-banner" role="status">
+          <p>サンプルデータを表示中です。ここでの変更は保存されず、あなたの記録には影響しません。</p>
+          <button className="secondary" onClick={() => setSampleMode(false)}>
+            サンプルを終了
+          </button>
+        </div>
+      )}
+
+      {/* 切り替え時に作り直し、サンプルと自分の記録が混ざらないようにする */}
+      <Workspace
+        key={sampleMode ? 'sample' : 'mine'}
+        sampleMode={sampleMode}
+        onTrySample={() => setSampleMode(true)}
+      />
 
       <footer className="app-footer">
         地図データ出典：地球地図日本（国土地理院）／
