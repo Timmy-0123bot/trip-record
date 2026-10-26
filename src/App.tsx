@@ -50,9 +50,19 @@ function App() {
 
   const backupData: BackupData = {
     domestic: { trips: domestic.trips, markedIds: domestic.markedIds },
+    overseas: { trips: overseas.trips, markedIds: overseas.markedIds },
   }
 
-  const handleImport = (data: BackupData) => domestic.importData(data.domestic)
+  // 国内・海外それぞれに統合し、件数を合算して返す
+  const handleImport = (data: BackupData) => {
+    const d = domestic.importData(data.domestic)
+    const o = overseas.importData(data.overseas)
+    return {
+      added: d.added + o.added,
+      updated: d.updated + o.updated,
+      addedMarks: d.addedMarks + o.addedMarks,
+    }
+  }
 
   return (
     <div className="app">
