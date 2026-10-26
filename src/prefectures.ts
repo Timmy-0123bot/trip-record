@@ -97,7 +97,6 @@ const toPlace = (p: Prefecture): Place<number> => ({
   id: p.id,
   name: p.name,
   group: p.region,
-  counted: true,
 })
 
 export const domesticCatalog: PlaceCatalog<number> = {

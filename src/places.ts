@@ -1,13 +1,12 @@
 // 国内（都道府県）と海外（国・地域）で共通に扱う「場所」の型
 
-// 都道府県は JIS コード（数値）、国・地域は ISO 3166-1 alpha-2 コード（文字列）
+// 都道府県は JIS コード（数値）、国・地域は ISO 3166-1 alpha-2 コード（文字列。ハワイのみ州コード US-HI）
 export type PlaceId = number | string
 
 export type Place<Id extends PlaceId> = {
   id: Id
   name: string
   group: string // 地方・大陸
-  counted: boolean // 訪問数の分母に含めるか（台湾などの「地域」は false）
   flag?: string // 国旗の絵文字
 }
 

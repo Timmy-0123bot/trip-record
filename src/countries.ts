@@ -2,9 +2,10 @@ import { toHiragana, type Place, type PlaceCatalog } from './places'
 
 // 国・地域マスタ
 // - 国：日本が承認している195か国（国連加盟国から日本・北朝鮮を除き、バチカン・コソボ・クック諸島・ニウエを加えたもの）
-// - 地域：台湾・香港など。記録はできるが訪問数の分母には含めない
+// - 地域：台湾・香港・ハワイなど13地域。国とは別に記録し、訪問数にも含める（合計208の国・地域）
 // - 位置：移動距離の計算に使う代表地点（主に首都）の緯度・経度
 // - numeric：地図データ（ISO 3166-1 数字コード）との対応。コソボは数字コードがないため地図側で名前から対応付ける
+//   ハワイは地図データではアメリカの一部のため、数字コードを持たせず点で表示する
 
 export const CONTINENTS = [
   'アジア',
@@ -23,14 +24,15 @@ export type Country = {
   numeric: string
   name: string
   kana: string // 検索用の読み（ひらがな）
-  aliases: string[] // 別名（米国、英国、ハワイなど）
+  aliases: string[] // 別名（米国、英国、ドバイなど）
   continent: Continent
   lat: number
   lon: number
   isRegion: boolean
+  flag?: string // 国旗の絵文字がない地域（ハワイ）用の表示
 }
 
-type Options = { kana?: string; aliases?: string[]; region?: boolean }
+type Options = { kana?: string; aliases?: string[]; region?: boolean; flag?: string }
 
 function c(
   code: string,
@@ -52,6 +54,7 @@ function c(
     lat,
     lon,
     isRegion: opts.region ?? false,
+    flag: opts.flag,
   }
 }
 
@@ -221,7 +224,7 @@ export const COUNTRIES: Country[] = [
 
   // 北アメリカ（中米・カリブを含む）
   c('US', '840', 'アメリカ', '北アメリカ', 38.91, -77.04, {
-    aliases: ['米国', 'べいこく', 'アメリカ合衆国', 'USA', 'ハワイ', 'ニューヨーク'],
+    aliases: ['米国', 'べいこく', 'アメリカ合衆国', 'USA', 'ニューヨーク'],
   }),
   c('CA', '124', 'カナダ', '北アメリカ', 45.42, -75.7),
   c('MX', '484', 'メキシコ', '北アメリカ', 19.43, -99.13),
@@ -281,6 +284,12 @@ export const COUNTRIES: Country[] = [
   c('PW', '585', 'パラオ', 'オセアニア', 7.5, 134.62),
   c('CK', '184', 'クック諸島', 'オセアニア', -21.21, -159.78, { kana: 'くっくしょとう' }),
   c('NU', '570', 'ニウエ', 'オセアニア', -19.06, -169.92),
+  // ハワイは ISO の国コードを持たないため、州コードの US-HI を使う（国旗の絵文字もないので花で表す）
+  c('US-HI', '', 'ハワイ', 'オセアニア', 21.31, -157.86, {
+    aliases: ['ホノルル', 'オアフ'],
+    region: true,
+    flag: '🌺',
+  }),
   c('GU', '316', 'グアム', 'オセアニア', 13.48, 144.75, { region: true }),
   c('MP', '580', '北マリアナ諸島', 'オセアニア', 15.21, 145.75, {
     kana: 'きたまりあなしょとう',
@@ -323,8 +332,7 @@ const toPlace = (c: Country): Place<string> => ({
   id: c.code,
   name: c.name,
   group: c.continent,
-  counted: !c.isRegion,
-  flag: flagOf(c.code),
+  flag: c.flag ?? flagOf(c.code),
 })
 
 // 名前・読み・別名のどこかに入力が含まれる国・地域を返す

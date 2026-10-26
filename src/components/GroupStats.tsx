@@ -5,7 +5,7 @@ type Props<Id extends PlaceId> = {
   title: string // 「地方ごとの訪問数」など
   groupUnit: string // 「地方」「大陸」
   groups: readonly string[]
-  places: Place<Id>[] // 集計の対象（分母に含める場所のみ）
+  places: Place<Id>[]
   visitedIds: Set<Id>
   storageKey: string // 開閉状態の保存先
 }

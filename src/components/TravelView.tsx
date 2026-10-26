@@ -71,12 +71,11 @@ export function TravelView<Id extends PlaceId>({
   const [mapMode, setMapMode] = useState<MapMode>('select')
   const [mapNotice, setMapNotice] = useState('')
 
-  // 分母に含める場所（台湾などの「地域」は除く）
-  const countedPlaces = catalog.places.filter((p) => p.counted)
-  const total = countedPlaces.length
-  const visitedCount = countedPlaces.filter((p) => visitedIds.has(p.id)).length
+  const places = catalog.places
+  const total = places.length
+  const visitedCount = places.filter((p) => visitedIds.has(p.id)).length
   const remainingCount = total - visitedCount
-  const unvisited = countedPlaces.filter((p) => !visitedIds.has(p.id))
+  const unvisited = places.filter((p) => !visitedIds.has(p.id))
 
   const shownTrips =
     selectedId === null ? trips : trips.filter((t) => t.placeIds.includes(selectedId))
@@ -147,7 +146,7 @@ export function TravelView<Id extends PlaceId>({
           title={groupTitle}
           groupUnit={groupUnit}
           groups={catalog.groups}
-          places={countedPlaces}
+          places={places}
           visitedIds={visitedIds}
           storageKey={groupStorageKey}
         />

@@ -42,7 +42,11 @@ function App() {
   const [tab, setTab] = useState<Tab>(loadTab)
 
   // 訪問した「地域」（台湾・香港など。訪問国数には含めない）
-  const visitedRegions = COUNTRIES.filter((c) => c.isRegion && overseas.visitedIds.has(c.code))
+  // 訪問数の内訳（国と地域）
+  const countries = COUNTRIES.filter((c) => !c.isRegion)
+  const regions = COUNTRIES.filter((c) => c.isRegion)
+  const visitedCountryCount = countries.filter((c) => overseas.visitedIds.has(c.code)).length
+  const visitedRegions = regions.filter((c) => overseas.visitedIds.has(c.code))
 
   // 海外の総移動距離と、地球何周分か
   const totalKm = totalDistanceKm(overseas.trips, overseas.markedIds)
@@ -113,8 +117,8 @@ function App() {
             key="overseas"
             catalog={overseasCatalog}
             records={overseas}
-            remainingUnit="か国"
-            completeMessage="🎉 日本が承認している195か国をすべて訪問しました！"
+            remainingUnit="か国・地域"
+            completeMessage={`🎉 全${COUNTRIES.length}の国・地域をすべて訪問しました！`}
             groupTitle="大陸ごとの訪問数"
             groupUnit="大陸"
             groupStorageKey="trip-record:ui:continentsOpen"
@@ -123,12 +127,12 @@ function App() {
             stackedLayout
             statsExtra={
               <>
-                {visitedRegions.length > 0 && (
-                  <p className="regions-visited">
-                    訪問した地域（か国数には含めない）：
-                    {visitedRegions.map((c) => labelOf(overseasCatalog, c.code)).join('・')}
-                  </p>
-                )}
+                <p className="regions-visited">
+                  内訳：国 {visitedCountryCount} / {countries.length}・地域 {visitedRegions.length} /{' '}
+                  {regions.length}
+                  {visitedRegions.length > 0 &&
+                    `（${visitedRegions.map((c) => labelOf(overseasCatalog, c.code)).join('・')}）`}
+                </p>
                 <div className="distance">
                   <div className="stat">
                     <span className="stat-label">総移動距離（目安）</span>
@@ -145,7 +149,7 @@ function App() {
                     </span>
                   </div>
                   <p className="distance-note">
-                    東京から訪れた国の首都までの直線距離で計算しています（地球1周＝40,075 km）
+                    東京から訪れた国の首都（地域は中心都市）までの直線距離で計算しています（地球1周＝40,075 km）
                   </p>
                 </div>
               </>
