@@ -33,6 +33,8 @@ export default defineConfig(({ command, isPreview }) => ({
       workbox: {
         // 地図データ（JS に同梱）や国旗フォントも含め、アプリ一式を端末に保存する
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // SNS 共有用の画像はアプリの動作に不要なので端末には保存しない
+        globIgnores: ['og-image.png'],
       },
     }),
   ],
