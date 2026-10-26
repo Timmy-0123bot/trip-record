@@ -26,6 +26,8 @@ type Props<Id extends PlaceId> = {
   groupStorageKey: string
   titlePlaceholder: string
   showUnvisitedList: boolean
+  // true：地図を横幅いっぱいに表示し、その下に旅行記録を並べる（世界地図用）
+  stackedLayout?: boolean
   statsExtra?: ReactNode // 訪問状況の欄に追加で表示するもの
   renderMap: (props: MapProps<Id>) => ReactNode
 }
@@ -55,6 +57,7 @@ export function TravelView<Id extends PlaceId>({
   groupStorageKey,
   titlePlaceholder,
   showUnvisitedList,
+  stackedLayout = false,
   statsExtra,
   renderMap,
 }: Props<Id>) {
@@ -158,7 +161,7 @@ export function TravelView<Id extends PlaceId>({
         )}
       </section>
 
-      <main className="layout">
+      <main className={stackedLayout ? 'layout stacked' : 'layout'}>
         <section className="map-panel">
           <div className="map-toolbar">
             <button

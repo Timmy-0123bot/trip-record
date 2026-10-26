@@ -10,10 +10,12 @@
   --pref-stroke: #ffffff;
   --visited: #e8735a;
   --marked: #f5bfae;
+  --ocean: #eaf1f5;
+  --home: #b9c4cc;
   --selected-stroke: #1f4e79;
   --danger: #c0392b;
 
-  font-family: system-ui, 'Hiragino Sans', 'Yu Gothic UI', 'Segoe UI', sans-serif;
+  font-family: 'Twemoji Country Flags', system-ui, 'Hiragino Sans', 'Yu Gothic UI', 'Segoe UI', sans-serif;
   line-height: 1.6;
   color: var(--text);
   background: var(--bg);
@@ -31,6 +33,8 @@
     --pref-stroke: #1b1a19;
     --visited: #e07a5f;
     --marked: #8a5244;
+    --ocean: #1f2a30;
+    --home: #4a5560;
     --selected-stroke: #8fc1ec;
     color-scheme: dark;
   }
@@ -133,21 +137,6 @@ button.link:hover {
   background: var(--surface);
   color: var(--text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-}
-
-.coming-soon {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px 16px;
-  text-align: center;
-  color: var(--muted);
-}
-
-.coming-soon h2 {
-  margin: 0 0 8px;
-  font-size: 1.2rem;
-  color: var(--text);
 }
 
 /* 訪問状況 */
@@ -320,12 +309,12 @@ button.link:hover {
 }
 
 @media (min-width: 860px) {
-  .layout {
+  .layout:not(.stacked) {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     align-items: start;
   }
 
-  .map-panel {
+  .layout:not(.stacked) .map-panel {
     position: sticky;
     top: 16px;
   }
@@ -373,8 +362,104 @@ button.link:hover {
   fill: var(--marked);
 }
 
+/* 世界地図 */
+.world-map-wrap {
+  position: relative;
+}
+
+.world-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  cursor: grab;
+}
+
+.world-map .ocean {
+  fill: var(--ocean);
+}
+
+/* 拡大しても境界線の太さが変わらないようにする */
+.world-map path,
+.world-map circle {
+  vector-effect: non-scaling-stroke;
+}
+
+.world-map .pref {
+  stroke-width: 0.5;
+}
+
+.world-map .pref.dot {
+  fill: var(--pref-fill);
+  stroke: var(--muted);
+  stroke-width: 0.8;
+}
+
+.world-map .pref.dot.visited {
+  fill: var(--visited);
+}
+
+.world-map .pref.dot.marked {
+  fill: var(--marked);
+}
+
+.world-map .pref.selected,
+.world-map .pref:focus-visible {
+  stroke-width: 2;
+}
+
+.country-home {
+  fill: var(--home);
+  stroke: var(--pref-stroke);
+  stroke-width: 0.5;
+}
+
+.country-inert {
+  fill: var(--pref-fill);
+  stroke: var(--pref-stroke);
+  stroke-width: 0.5;
+  opacity: 0.6;
+}
+
+.zoom-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.zoom-controls button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.zoom-controls button:hover {
+  background: var(--bg);
+}
+
+.map-help {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.regions-visited {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 /* 印を付けるモード中は地図を点線で囲んで、通常時と区別する */
-.japan-map.mark-mode {
+.japan-map.mark-mode,
+.world-map.mark-mode {
   outline: 2px dashed var(--visited);
   outline-offset: 2px;
   border-radius: 8px;

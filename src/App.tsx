@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { BackupPanel } from './components/BackupPanel'
 import { JapanMap } from './components/JapanMap'
 import { TravelView } from './components/TravelView'
+import { WorldMap } from './components/WorldMap'
 import type { BackupData } from './backup'
+import { COUNTRIES, overseasCatalog } from './countries'
+import { labelOf } from './places'
 import { domesticCatalog } from './prefectures'
-import { DOMESTIC_STORE, usePlaceRecords } from './records'
+import { DOMESTIC_STORE, OVERSEAS_STORE, usePlaceRecords } from './records'
 
 type Tab = 'domestic' | 'overseas'
 
@@ -34,7 +37,11 @@ function saveTab(tab: Tab) {
 
 function App() {
   const domestic = usePlaceRecords<number>(DOMESTIC_STORE)
+  const overseas = usePlaceRecords<string>(OVERSEAS_STORE)
   const [tab, setTab] = useState<Tab>(loadTab)
+
+  // 訪問した「地域」（台湾・香港など。訪問国数には含めない）
+  const visitedRegions = COUNTRIES.filter((c) => c.isRegion && overseas.visitedIds.has(c.code))
 
   const selectTab = (next: Tab) => {
     setTab(next)
@@ -71,8 +78,10 @@ function App() {
       </div>
 
       <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`}>
+        {/* 国内と海外は同じ部品なので key で別物として扱い、選択状態などが混ざらないようにする */}
         {tab === 'domestic' ? (
           <TravelView
+            key="domestic"
             catalog={domesticCatalog}
             records={domestic}
             remainingUnit="都道府県"
@@ -85,10 +94,28 @@ function App() {
             renderMap={(props) => <JapanMap {...props} />}
           />
         ) : (
-          <section className="coming-soon">
-            <h2>海外の記録</h2>
-            <p>準備中です。もうしばらくお待ちください。</p>
-          </section>
+          <TravelView
+            key="overseas"
+            catalog={overseasCatalog}
+            records={overseas}
+            remainingUnit="か国"
+            completeMessage="🎉 日本が承認している195か国をすべて訪問しました！"
+            groupTitle="大陸ごとの訪問数"
+            groupUnit="大陸"
+            groupStorageKey="trip-record:ui:continentsOpen"
+            titlePlaceholder="例：パリ・ロンドン周遊"
+            showUnvisitedList={false}
+            stackedLayout
+            statsExtra={
+              visitedRegions.length > 0 && (
+                <p className="regions-visited">
+                  訪問した地域（か国数には含めない）：
+                  {visitedRegions.map((c) => labelOf(overseasCatalog, c.code)).join('・')}
+                </p>
+              )
+            }
+            renderMap={(props) => <WorldMap {...props} />}
+          />
         )}
       </div>
 
@@ -99,6 +126,15 @@ function App() {
         <a href="https://github.com/dataofjapan/land" target="_blank" rel="noreferrer">
           dataofjapan/land
         </a>
+        、世界地図：
+        <a href="https://www.naturalearthdata.com/" target="_blank" rel="noreferrer">
+          Natural Earth
+        </a>
+        、国旗：
+        <a href="https://github.com/twitter/twemoji" target="_blank" rel="noreferrer">
+          Twemoji
+        </a>
+        （CC-BY 4.0）
       </footer>
     </div>
   )
