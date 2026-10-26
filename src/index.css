@@ -106,6 +106,50 @@ button.link:hover {
   color: var(--muted);
 }
 
+/* 国内・海外の切り替えタブ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 4px;
+  background: var(--pref-fill);
+  border-radius: 10px;
+}
+
+.tabs .tab {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
+.tabs .tab:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.tabs .tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.coming-soon {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.coming-soon h2 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
 /* 訪問状況 */
 .stats {
   display: grid;
@@ -515,11 +559,11 @@ button.link:hover {
   gap: 12px;
 }
 
-.pref-search {
+.place-search {
   position: relative;
 }
 
-.pref-options {
+.place-options {
   position: absolute;
   z-index: 10;
   top: calc(100% + 4px);
@@ -537,7 +581,7 @@ button.link:hover {
   font-weight: normal;
 }
 
-.pref-options li {
+.place-options li {
   display: flex;
   justify-content: space-between;
   padding: 6px 10px;
@@ -545,17 +589,17 @@ button.link:hover {
   cursor: pointer;
 }
 
-.pref-options li.active {
+.place-options li.active {
   background: var(--bg);
   color: var(--accent-strong);
 }
 
-.pref-option-region {
+.place-option-group {
   color: var(--muted);
   font-size: 0.8rem;
 }
 
-.pref-options .pref-option-empty {
+.place-options .place-option-empty {
   color: var(--muted);
   cursor: default;
 }

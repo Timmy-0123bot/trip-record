@@ -1,3 +1,5 @@
+import { toHiragana, type Place, type PlaceCatalog } from './places'
+
 // 都道府県マスタ（id は JIS X 0401 の都道府県コード。地図データの id と一致）
 export type Prefecture = {
   id: number
@@ -82,13 +84,6 @@ const fullKana = new Map(
   PREFECTURES.map((p) => [p.id, p.kana + (SUFFIX_KANA[p.name.slice(-1)] ?? '')]),
 )
 
-// カタカナをひらがなに揃える
-function toHiragana(s: string): string {
-  return s.replace(/[ァ-ヶ]/g, (c) =>
-    String.fromCharCode(c.charCodeAt(0) - 0x60),
-  )
-}
-
 // 漢字（部分一致）・ひらがな・カタカナ（前方一致）で都道府県を検索する
 export function searchPrefectures(query: string): Prefecture[] {
   const q = toHiragana(query.trim())
@@ -96,4 +91,20 @@ export function searchPrefectures(query: string): Prefecture[] {
   return PREFECTURES.filter(
     (p) => p.name.includes(q) || fullKana.get(p.id)!.startsWith(q),
   )
+}
+
+const toPlace = (p: Prefecture): Place<number> => ({
+  id: p.id,
+  name: p.name,
+  group: p.region,
+  counted: true,
+})
+
+export const domesticCatalog: PlaceCatalog<number> = {
+  placeLabel: '都道府県',
+  searchPlaceholder: '都道府県名を入力（例：きょうと、京都）',
+  groups: REGIONS,
+  places: PREFECTURES.map(toPlace),
+  nameOf: prefectureName,
+  search: (query) => searchPrefectures(query).map(toPlace),
 }

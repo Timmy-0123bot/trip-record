@@ -1,25 +1,29 @@
 import { useId, useState, type KeyboardEvent } from 'react'
-import { searchPrefectures } from '../prefectures'
+import type { PlaceCatalog, PlaceId } from '../places'
 
-type Props = {
+type Props<Id extends PlaceId> = {
   inputId: string
-  selectedIds: number[]
-  onAdd: (id: number) => void
+  catalog: PlaceCatalog<Id>
+  selectedIds: Id[]
+  onAdd: (id: Id) => void
 }
 
-// 文字入力で絞り込んで都道府県を追加する入力欄（↑↓で選択、Enterで追加）
-export function PrefectureSearch({ inputId, selectedIds, onAdd }: Props) {
+// 文字入力で絞り込んで場所（都道府県・国）を追加する入力欄（↑↓で選択、Enterで追加）
+export function PlaceSearch<Id extends PlaceId>({
+  inputId,
+  catalog,
+  selectedIds,
+  onAdd,
+}: Props<Id>) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const listId = useId()
 
-  const candidates = searchPrefectures(query).filter(
-    (p) => !selectedIds.includes(p.id),
-  )
+  const candidates = catalog.search(query).filter((p) => !selectedIds.includes(p.id))
   const active = candidates[Math.min(activeIndex, candidates.length - 1)]
 
-  const choose = (id: number) => {
+  const choose = (id: Id) => {
     onAdd(id)
     setQuery('')
     setActiveIndex(0)
@@ -45,7 +49,7 @@ export function PrefectureSearch({ inputId, selectedIds, onAdd }: Props) {
   }
 
   return (
-    <div className="pref-search">
+    <div className="place-search">
       <input
         id={inputId}
         role="combobox"
@@ -54,7 +58,7 @@ export function PrefectureSearch({ inputId, selectedIds, onAdd }: Props) {
         aria-autocomplete="list"
         aria-activedescendant={open && active ? `${listId}-${active.id}` : undefined}
         value={query}
-        placeholder="都道府県名を入力（例：きょうと、京都）"
+        placeholder={catalog.searchPlaceholder}
         onChange={(e) => {
           setQuery(e.target.value)
           setActiveIndex(0)
@@ -65,9 +69,11 @@ export function PrefectureSearch({ inputId, selectedIds, onAdd }: Props) {
         onKeyDown={handleKeyDown}
       />
       {open && (
-        <ul id={listId} role="listbox" className="pref-options">
+        <ul id={listId} role="listbox" className="place-options">
           {candidates.length === 0 ? (
-            <li className="pref-option-empty">該当する都道府県がありません</li>
+            <li className="place-option-empty">
+              該当する{catalog.placeLabel}がありません
+            </li>
           ) : (
             candidates.map((p) => (
               <li
@@ -80,8 +86,11 @@ export function PrefectureSearch({ inputId, selectedIds, onAdd }: Props) {
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(p.id)}
               >
-                {p.name}
-                <span className="pref-option-region">{p.region}</span>
+                <span>
+                  {p.flag && <span className="flag">{p.flag} </span>}
+                  {p.name}
+                </span>
+                <span className="place-option-group">{p.group}</span>
               </li>
             ))
           )}

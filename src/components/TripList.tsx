@@ -1,15 +1,16 @@
-import { prefectureName } from '../prefectures'
-import { tripTitle, type Trip } from '../useTrips'
+import { labelOf, type PlaceCatalog, type PlaceId } from '../places'
+import { tripTitle, type TripRecord } from '../records'
 
-type Props = {
-  trips: Trip[]
+type Props<Id extends PlaceId> = {
+  catalog: PlaceCatalog<Id>
+  trips: TripRecord<Id>[]
   emptyMessage: string
-  onEdit: (trip: Trip) => void
-  onDelete: (trip: Trip) => void
+  onEdit: (trip: TripRecord<Id>) => void
+  onDelete: (trip: TripRecord<Id>) => void
 }
 
 // 日付は任意入力のため、出発日・帰着日のどちらか（または両方）が空の場合がある
-function formatPeriod(trip: Trip) {
+function formatPeriod(trip: { startDate: string; endDate: string }) {
   const fmt = (d: string) => d.replaceAll('-', '/')
   const { startDate, endDate } = trip
   if (!startDate && !endDate) return '日付未設定'
@@ -19,13 +20,19 @@ function formatPeriod(trip: Trip) {
     : fmt(startDate)
 }
 
-export function TripList({ trips, emptyMessage, onEdit, onDelete }: Props) {
+export function TripList<Id extends PlaceId>({
+  catalog,
+  trips,
+  emptyMessage,
+  onEdit,
+  onDelete,
+}: Props<Id>) {
   if (trips.length === 0) {
     return <p className="empty">{emptyMessage}</p>
   }
 
   // 新しい旅行が上に来るように並べる（日付のない記録は最後）
-  const dateOf = (t: Trip) => t.startDate || t.endDate
+  const dateOf = (t: TripRecord<Id>) => t.startDate || t.endDate
   const sorted = [...trips].sort((a, b) => dateOf(b).localeCompare(dateOf(a)))
 
   return (
@@ -33,13 +40,11 @@ export function TripList({ trips, emptyMessage, onEdit, onDelete }: Props) {
       {sorted.map((trip) => (
         <li key={trip.id} className="trip-card">
           <div className="trip-head">
-            <h3 className={trip.title ? undefined : 'untitled'}>
-              {tripTitle(trip)}
-            </h3>
+            <h3 className={trip.title ? undefined : 'untitled'}>{tripTitle(trip)}</h3>
             <span className="trip-date">{formatPeriod(trip)}</span>
           </div>
           <p className="trip-prefs">
-            {trip.prefectureIds.map(prefectureName).join('・')}
+            {trip.placeIds.map((id) => labelOf(catalog, id)).join('・')}
           </p>
           {trip.memo && <p className="trip-memo">{trip.memo}</p>}
           <div className="trip-actions">

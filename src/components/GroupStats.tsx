@@ -1,37 +1,47 @@
 import { useState } from 'react'
-import { PREFECTURES, REGIONS } from '../prefectures'
+import type { Place, PlaceId } from '../places'
 
-type Props = {
-  visitedIds: Set<number>
+type Props<Id extends PlaceId> = {
+  title: string // 「地方ごとの訪問数」など
+  groupUnit: string // 「地方」「大陸」
+  groups: readonly string[]
+  places: Place<Id>[] // 集計の対象（分母に含める場所のみ）
+  visitedIds: Set<Id>
+  storageKey: string // 開閉状態の保存先
 }
 
 // 一覧を開いているかどうか（次に開いたときも同じ状態にするため、このブラウザに保存する）
-const OPEN_KEY = 'trip-record:ui:regionsOpen'
-
-function loadOpen(): boolean {
+function loadOpen(key: string): boolean {
   try {
-    return localStorage.getItem(OPEN_KEY) === '1'
+    return localStorage.getItem(key) === '1'
   } catch {
     return false
   }
 }
 
-function saveOpen(open: boolean) {
+function saveOpen(key: string, open: boolean) {
   try {
-    localStorage.setItem(OPEN_KEY, open ? '1' : '0')
+    localStorage.setItem(key, open ? '1' : '0')
   } catch {
     // 保存できなくても表示には影響しないので無視する
   }
 }
 
-// 地方ごとの訪問数。普段は折りたたみ、各地方を開くとまだ行っていない都道府県を表示する
-export function RegionStats({ visitedIds }: Props) {
-  const [open, setOpen] = useState(loadOpen)
+// 地方・大陸ごとの訪問数。普段は折りたたみ、各グループを開くとまだ行っていない場所を表示する
+export function GroupStats<Id extends PlaceId>({
+  title,
+  groupUnit,
+  groups,
+  places,
+  visitedIds,
+  storageKey,
+}: Props<Id>) {
+  const [open, setOpen] = useState(() => loadOpen(storageKey))
 
-  const rows = REGIONS.map((region) => {
-    const prefs = PREFECTURES.filter((p) => p.region === region)
-    const unvisited = prefs.filter((p) => !visitedIds.has(p.id))
-    return { region, total: prefs.length, unvisited }
+  const rows = groups.map((group) => {
+    const members = places.filter((p) => p.group === group)
+    const unvisited = members.filter((p) => !visitedIds.has(p.id))
+    return { group, total: members.length, unvisited }
   })
   const completedCount = rows.filter((r) => r.unvisited.length === 0).length
 
@@ -42,24 +52,24 @@ export function RegionStats({ visitedIds }: Props) {
       onToggle={(e) => {
         const next = e.currentTarget.open
         setOpen(next)
-        saveOpen(next)
+        saveOpen(storageKey, next)
       }}
     >
       <summary>
-        地方ごとの訪問数
+        {title}
         <span className="region-summary-note">
-          （制覇 {completedCount} / {REGIONS.length} 地方）
+          （制覇 {completedCount} / {groups.length} {groupUnit}）
         </span>
       </summary>
       <ul className="region-stats">
-        {rows.map(({ region, total, unvisited }) => {
+        {rows.map(({ group, total, unvisited }) => {
           const visitedCount = total - unvisited.length
           const complete = unvisited.length === 0
           return (
-            <li key={region}>
+            <li key={group}>
               <details className={complete ? 'region complete' : 'region'}>
                 <summary>
-                  <span className="region-name">{region}</span>
+                  <span className="region-name">{group}</span>
                   <span className="region-bar" aria-hidden="true">
                     <span
                       className="region-bar-fill"
@@ -73,7 +83,7 @@ export function RegionStats({ visitedIds }: Props) {
                 </summary>
                 <p className="region-detail">
                   {complete
-                    ? `${region}はすべて訪問済みです`
+                    ? `${group}はすべて訪問済みです`
                     : `未訪問：${unvisited.map((p) => p.name).join('・')}`}
                 </p>
               </details>

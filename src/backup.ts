@@ -1,15 +1,20 @@
 import { PREFECTURE_COUNT } from './prefectures'
-import type { Trip } from './useTrips'
+import type { PlaceId } from './places'
+import { DOMESTIC_STORE, toStored, type RecordStore, type TripRecord } from './records'
 
 // バックアップファイルの形式（将来の形式変更に備えて version を持たせる）
 type BackupFile = {
   app: 'trip-record'
   version: 1
   exportedAt: string
-  trips: Trip[]
+  trips: Record<string, unknown>[] // 国内の旅行記録（場所は prefectureIds）
   // 「行ったことがある」の印（この項目がない古いバックアップは印なしとして扱う）
   markedIds?: number[]
 }
+
+// 画面側とやり取りするバックアップの中身
+export type PlaceData<Id extends PlaceId> = { trips: TripRecord<Id>[]; markedIds: Id[] }
+export type BackupData = { domestic: PlaceData<number> }
 
 const LAST_BACKUP_KEY = 'trip-record:lastBackupAt'
 
@@ -35,16 +40,16 @@ function dateString(date: Date): string {
 }
 
 // 記録と印を JSON ファイルとしてダウンロードし、保存日時を返す
-export function downloadBackup(trips: Trip[], markedIds: number[]): string {
+export function downloadBackup(data: BackupData): string {
   const now = new Date()
-  const data: BackupFile = {
+  const file: BackupFile = {
     app: 'trip-record',
     version: 1,
     exportedAt: now.toISOString(),
-    trips,
-    markedIds,
+    trips: data.domestic.trips.map((t) => toStored(t, DOMESTIC_STORE.placeField)),
+    markedIds: data.domestic.markedIds,
   }
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
+  const blob = new Blob([JSON.stringify(file, null, 2)], {
     type: 'application/json',
   })
   const url = URL.createObjectURL(blob)
@@ -54,8 +59,8 @@ export function downloadBackup(trips: Trip[], markedIds: number[]): string {
   a.click()
   URL.revokeObjectURL(url)
 
-  saveLastBackupAt(data.exportedAt)
-  return data.exportedAt
+  saveLastBackupAt(file.exportedAt)
+  return file.exportedAt
 }
 
 const isDate = (v: unknown): v is string =>
@@ -65,54 +70,62 @@ const isPrefectureId = (v: unknown): v is number =>
   Number.isInteger(v) && (v as number) >= 1 && (v as number) <= PREFECTURE_COUNT
 
 // 1件分のデータを検証して正しい形に整える（使えないデータなら null）
-function toTrip(v: unknown): Trip | null {
+function toTrip<Id extends PlaceId>(
+  v: unknown,
+  field: RecordStore['placeField'],
+  isValidId: (id: unknown) => id is Id,
+): TripRecord<Id> | null {
   if (typeof v !== 'object' || v === null) return null
   const r = v as Record<string, unknown>
   if (typeof r.id !== 'string' || !r.id) return null
-  if (!Array.isArray(r.prefectureIds)) return null
-  const prefectureIds = [...new Set(r.prefectureIds.filter(isPrefectureId))]
-  if (prefectureIds.length === 0) return null
+  const rawIds = r[field]
+  if (!Array.isArray(rawIds)) return null
+  const placeIds = [...new Set(rawIds.filter(isValidId))]
+  if (placeIds.length === 0) return null
   return {
     id: r.id,
     title: typeof r.title === 'string' ? r.title : '',
     startDate: isDate(r.startDate) ? r.startDate : '',
     endDate: isDate(r.endDate) ? r.endDate : '',
-    prefectureIds: prefectureIds.sort((a, b) => a - b),
+    placeIds: placeIds.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
     memo: typeof r.memo === 'string' ? r.memo : '',
   }
 }
 
+// 記録の配列と印の配列を検証する。読み込めなかった記録の件数も返す
+function parsePlaceData<Id extends PlaceId>(
+  trips: unknown,
+  marks: unknown,
+  field: RecordStore['placeField'],
+  isValidId: (id: unknown) => id is Id,
+) {
+  const rawTrips = Array.isArray(trips) ? trips : []
+  const parsed = rawTrips
+    .map((t) => toTrip(t, field, isValidId))
+    .filter((t): t is TripRecord<Id> => t !== null)
+  const markedIds = Array.isArray(marks) ? [...new Set(marks.filter(isValidId))] : []
+  return { data: { trips: parsed, markedIds }, skipped: rawTrips.length - parsed.length }
+}
+
 export type ParseResult =
-  | { ok: true; trips: Trip[]; markedIds: number[]; skipped: number }
+  | { ok: true; data: BackupData; skipped: number }
   | { ok: false; message: string }
 
 // バックアップファイルの中身を読み取る。壊れた記録は読み飛ばし、その件数を返す
 export function parseBackup(text: string): ParseResult {
-  let data: unknown
+  let json: unknown
   try {
-    data = JSON.parse(text)
+    json = JSON.parse(text)
   } catch {
     return { ok: false, message: 'ファイルを読み取れませんでした（JSON 形式ではありません）' }
   }
-  const file = data as Partial<BackupFile> | null
+  const file = json as Partial<BackupFile> | null
   if (file?.app !== 'trip-record' || !Array.isArray(file.trips)) {
     return { ok: false, message: 'trip-record のバックアップファイルではありません' }
   }
   if (file.version !== 1) {
     return { ok: false, message: 'このバージョンのバックアップファイルには対応していません' }
   }
-  const trips = file.trips.map(toTrip).filter((t): t is Trip => t !== null)
-  const markedIds = Array.isArray(file.markedIds)
-    ? [...new Set(file.markedIds.filter(isPrefectureId))]
-    : []
-  return { ok: true, trips, markedIds, skipped: file.trips.length - trips.length }
-}
-
-// 現在の記録にバックアップを統合する（同じ id はバックアップで上書き、無いものは追加、既存は消さない）
-export function mergeTrips(current: Trip[], incoming: Trip[]) {
-  const incomingById = new Map(incoming.map((t) => [t.id, t]))
-  const currentIds = new Set(current.map((t) => t.id))
-  const added = [...incomingById.values()].filter((t) => !currentIds.has(t.id))
-  const merged = [...current.map((t) => incomingById.get(t.id) ?? t), ...added]
-  return { merged, added: added.length, updated: incomingById.size - added.length }
+  const domestic = parsePlaceData(file.trips, file.markedIds, DOMESTIC_STORE.placeField, isPrefectureId)
+  return { ok: true, data: { domestic: domestic.data }, skipped: domestic.skipped }
 }

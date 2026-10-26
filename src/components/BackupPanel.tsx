@@ -1,14 +1,18 @@
 import { useRef, useState, type ChangeEvent } from 'react'
-import { downloadBackup, loadLastBackupAt, parseBackup } from '../backup'
-import type { Trip } from '../useTrips'
+import { downloadBackup, loadLastBackupAt, parseBackup, type BackupData } from '../backup'
+import type { ImportResult } from '../records'
 
 type Props = {
-  trips: Trip[]
-  markedIds: number[]
-  onImport: (data: { trips: Trip[]; markedIds: number[] }) => {
-    added: number
-    updated: number
-    addedMarks: number
+  data: BackupData
+  onImport: (data: BackupData) => ImportResult
+}
+
+// 国内・海外を合わせた記録と印の件数
+function countAll(data: BackupData) {
+  const sections = Object.values(data)
+  return {
+    trips: sections.reduce((n, d) => n + d.trips.length, 0),
+    marks: sections.reduce((n, d) => n + d.markedIds.length, 0),
   }
 }
 
@@ -20,16 +24,18 @@ function formatDateTime(iso: string) {
   return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export function BackupPanel({ trips, markedIds, onImport }: Props) {
+export function BackupPanel({ data, onImport }: Props) {
   const [lastBackupAt, setLastBackupAt] = useState(loadLastBackupAt)
   const [message, setMessage] = useState<Message | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
+  const total = countAll(data)
+
   const handleDownload = () => {
-    setLastBackupAt(downloadBackup(trips, markedIds))
+    setLastBackupAt(downloadBackup(data))
     setMessage({
       kind: 'success',
-      text: `記録${trips.length}件・印${markedIds.length}件をファイルに保存しました`,
+      text: `記録${total.trips}件・印${total.marks}件をファイルに保存しました`,
     })
   }
 
@@ -44,19 +50,20 @@ export function BackupPanel({ trips, markedIds, onImport }: Props) {
       setMessage({ kind: 'error', text: result.message })
       return
     }
-    if (result.trips.length === 0 && result.markedIds.length === 0) {
+    const incoming = countAll(result.data)
+    if (incoming.trips === 0 && incoming.marks === 0) {
       setMessage({ kind: 'error', text: 'ファイルに読み込める記録がありませんでした' })
       return
     }
     if (
       !window.confirm(
-        `記録${result.trips.length}件・印${result.markedIds.length}件を読み込みます。\n今ある記録は消えず、同じ記録はファイルの内容で上書きされます。よろしいですか？`,
+        `記録${incoming.trips}件・印${incoming.marks}件を読み込みます。\n今ある記録は消えず、同じ記録はファイルの内容で上書きされます。よろしいですか？`,
       )
     ) {
       return
     }
 
-    const { added, updated, addedMarks } = onImport(result)
+    const { added, updated, addedMarks } = onImport(result.data)
     const skipped = result.skipped > 0 ? `（読み込めなかった記録：${result.skipped}件）` : ''
     setMessage({
       kind: 'success',
@@ -78,7 +85,7 @@ export function BackupPanel({ trips, markedIds, onImport }: Props) {
       <div className="backup-actions">
         <button
           onClick={handleDownload}
-          disabled={trips.length === 0 && markedIds.length === 0}
+          disabled={total.trips === 0 && total.marks === 0}
         >
           ファイルに保存
         </button>
