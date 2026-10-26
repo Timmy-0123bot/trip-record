@@ -739,6 +739,52 @@ button.link:hover {
   line-height: 1;
 }
 
+/* 「行ったことがある」の印だけの場所の一覧 */
+.marked-places {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.marked-places h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.marked-count {
+  margin-left: 8px;
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: var(--muted);
+}
+
+.marked-group {
+  display: grid;
+  grid-template-columns: 6.5em minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.marked-group-name {
+  padding-top: 2px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.chips.marked-chips {
+  margin: 0;
+}
+
+.chips.marked-chips li {
+  background: var(--marked);
+  color: var(--text);
+}
+
+.chips.marked-chips button {
+  color: var(--text);
+}
+
 .form-error {
   margin: 0;
   color: var(--danger);

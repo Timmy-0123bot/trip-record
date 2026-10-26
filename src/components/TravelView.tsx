@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import type { PlaceCatalog, PlaceId } from '../places'
 import { tripTitle, type PlaceRecords, type TripRecord, type TripValues } from '../records'
 import { GroupStats } from './GroupStats'
+import { MarkedPlaces } from './MarkedPlaces'
 import { TripForm } from './TripForm'
 import { TripList } from './TripList'
 
@@ -76,6 +77,18 @@ export function TravelView<Id extends PlaceId>({
   const visitedCount = places.filter((p) => visitedIds.has(p.id)).length
   const remainingCount = total - visitedCount
   const unvisited = places.filter((p) => !visitedIds.has(p.id))
+
+  // 旅行記録がなく、印だけが付いている場所
+  const markOnlyIds = new Set(markedIds.filter((id) => !tripPlaceIds.has(id)))
+
+  const emptyMessage =
+    selectedId === null
+      ? markOnlyIds.size > 0
+        ? 'まだ旅行記録がありません。「旅行を追加」から旅を記録しましょう。'
+        : 'まだ記録がありません。「旅行を追加」から最初の旅を記録しましょう。'
+      : markOnlyIds.has(selectedId)
+        ? `${catalog.nameOf(selectedId)}は「行ったことがある」の印が付いています（旅行記録はまだありません）。`
+        : `${catalog.nameOf(selectedId)}の記録はまだありません。`
 
   const shownTrips =
     selectedId === null ? trips : trips.filter((t) => t.placeIds.includes(selectedId))
@@ -231,14 +244,13 @@ export function TravelView<Id extends PlaceId>({
                 catalog={catalog}
                 trips={shownTrips}
                 noteOf={tripNoteOf}
-                emptyMessage={
-                  selectedId === null
-                    ? 'まだ記録がありません。「旅行を追加」から最初の旅を記録しましょう。'
-                    : `${catalog.nameOf(selectedId)}の記録はまだありません。`
-                }
+                emptyMessage={emptyMessage}
                 onEdit={(trip) => setForm({ mode: 'edit', trip })}
                 onDelete={handleDelete}
               />
+              {selectedId === null && (
+                <MarkedPlaces catalog={catalog} ids={markOnlyIds} onRemove={toggleMark} />
+              )}
             </>
           ) : (
             <>
