@@ -125,6 +125,7 @@ function Workspace({ sampleMode, onTrySample }: WorkspaceProps) {
             groupTitle="地方ごとの訪問数"
             groupUnit="地方"
             groupStorageKey="trip-record:ui:regionsOpen"
+            rouletteStorageKey="trip-record:ui:rouletteDomesticOpen"
             titlePlaceholder="例：京都・奈良 秋の旅"
             showUnvisitedList
             renderMap={(props) => <JapanMap {...props} />}
@@ -139,6 +140,7 @@ function Workspace({ sampleMode, onTrySample }: WorkspaceProps) {
             groupTitle="大陸ごとの訪問数"
             groupUnit="大陸"
             groupStorageKey="trip-record:ui:continentsOpen"
+            rouletteStorageKey="trip-record:ui:rouletteOverseasOpen"
             titlePlaceholder="例：パリ・ロンドン周遊"
             showUnvisitedList={false}
             stackedLayout

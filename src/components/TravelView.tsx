@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import type { PlaceCatalog, PlaceId } from '../places'
 import { tripTitle, type PlaceRecords, type TripRecord, type TripValues } from '../records'
 import { GroupStats } from './GroupStats'
 import { MarkedPlaces } from './MarkedPlaces'
+import { Roulette } from './Roulette'
 import { TripForm } from './TripForm'
 import { TripList } from './TripList'
 
@@ -25,6 +26,7 @@ type Props<Id extends PlaceId> = {
   groupTitle: string
   groupUnit: string
   groupStorageKey: string
+  rouletteStorageKey: string
   titlePlaceholder: string
   showUnvisitedList: boolean
   // true：地図を横幅いっぱいに表示し、その下に旅行記録を並べる（世界地図用）
@@ -57,6 +59,7 @@ export function TravelView<Id extends PlaceId>({
   groupTitle,
   groupUnit,
   groupStorageKey,
+  rouletteStorageKey,
   titlePlaceholder,
   showUnvisitedList,
   stackedLayout = false,
@@ -109,6 +112,27 @@ export function TravelView<Id extends PlaceId>({
         ? `${name}の印を外しました`
         : `${name}を「行ったことがある」にしました`,
     )
+  }
+
+  const mapPanelRef = useRef<HTMLElement>(null)
+  const tripsPanelRef = useRef<HTMLElement>(null)
+
+  // ルーレットの結果から：その場所を地図で選択する
+  const showOnMap = (id: Id) => {
+    setMapMode('select')
+    setMapNotice('')
+    setForm({ mode: 'closed' })
+    setSelectedId(id)
+    mapPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  // ルーレットの結果から：その場所を入れた状態で旅行の追加フォームを開く
+  const addTripFor = (id: Id) => {
+    setMapMode('select')
+    setMapNotice('')
+    setSelectedId(null)
+    setForm({ mode: 'create', initial: emptyValues([id]) })
+    tripsPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const toggleMapMode = () => {
@@ -175,8 +199,16 @@ export function TravelView<Id extends PlaceId>({
         )}
       </section>
 
+      <Roulette
+        catalog={catalog}
+        visitedIds={visitedIds}
+        storageKey={rouletteStorageKey}
+        onAddTrip={addTripFor}
+        onShowOnMap={showOnMap}
+      />
+
       <main className={stackedLayout ? 'layout stacked' : 'layout'}>
-        <section className="map-panel">
+        <section className="map-panel" ref={mapPanelRef}>
           <div className="map-toolbar">
             <button
               className={mapMode === 'mark' ? 'mark-toggle on' : 'mark-toggle secondary'}
@@ -213,7 +245,7 @@ export function TravelView<Id extends PlaceId>({
           </ul>
         </section>
 
-        <section className="trips-panel">
+        <section className="trips-panel" ref={tripsPanelRef}>
           {form.mode === 'closed' ? (
             <>
               <div className="trips-toolbar">
