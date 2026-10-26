@@ -28,7 +28,8 @@ type Props<Id extends PlaceId> = {
   showUnvisitedList: boolean
   // true：地図を横幅いっぱいに表示し、その下に旅行記録を並べる（世界地図用）
   stackedLayout?: boolean
-  statsExtra?: ReactNode // 訪問状況の欄に追加で表示するもの
+  statsExtra?: ReactNode
+  tripNoteOf?: (trip: TripRecord<Id>) => string // 訪問状況の欄に追加で表示するもの
   renderMap: (props: MapProps<Id>) => ReactNode
 }
 
@@ -59,6 +60,7 @@ export function TravelView<Id extends PlaceId>({
   showUnvisitedList,
   stackedLayout = false,
   statsExtra,
+  tripNoteOf,
   renderMap,
 }: Props<Id>) {
   const { trips, markedIds, tripPlaceIds, visitedIds, addTrip, updateTrip, deleteTrip, toggleMark } =
@@ -229,6 +231,7 @@ export function TravelView<Id extends PlaceId>({
               <TripList
                 catalog={catalog}
                 trips={shownTrips}
+                noteOf={tripNoteOf}
                 emptyMessage={
                   selectedId === null
                     ? 'まだ記録がありません。「旅行を追加」から最初の旅を記録しましょう。'

@@ -5,6 +5,7 @@ import { TravelView } from './components/TravelView'
 import { WorldMap } from './components/WorldMap'
 import type { BackupData } from './backup'
 import { COUNTRIES, overseasCatalog } from './countries'
+import { EARTH_CIRCUMFERENCE_KM, formatKm, totalDistanceKm, tripDistanceKm } from './distance'
 import { labelOf } from './places'
 import { domesticCatalog } from './prefectures'
 import { DOMESTIC_STORE, OVERSEAS_STORE, usePlaceRecords } from './records'
@@ -42,6 +43,10 @@ function App() {
 
   // 訪問した「地域」（台湾・香港など。訪問国数には含めない）
   const visitedRegions = COUNTRIES.filter((c) => c.isRegion && overseas.visitedIds.has(c.code))
+
+  // 海外の総移動距離と、地球何周分か
+  const totalKm = totalDistanceKm(overseas.trips, overseas.markedIds)
+  const earthLaps = totalKm / EARTH_CIRCUMFERENCE_KM
 
   const selectTab = (next: Tab) => {
     setTab(next)
@@ -117,13 +122,35 @@ function App() {
             showUnvisitedList={false}
             stackedLayout
             statsExtra={
-              visitedRegions.length > 0 && (
-                <p className="regions-visited">
-                  訪問した地域（か国数には含めない）：
-                  {visitedRegions.map((c) => labelOf(overseasCatalog, c.code)).join('・')}
-                </p>
-              )
+              <>
+                {visitedRegions.length > 0 && (
+                  <p className="regions-visited">
+                    訪問した地域（か国数には含めない）：
+                    {visitedRegions.map((c) => labelOf(overseasCatalog, c.code)).join('・')}
+                  </p>
+                )}
+                <div className="distance">
+                  <div className="stat">
+                    <span className="stat-label">総移動距離（目安）</span>
+                    <span className="stat-value">
+                      {Math.round(totalKm).toLocaleString('ja-JP')}
+                      <small> km</small>
+                    </span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">地球</span>
+                    <span className="stat-value">
+                      {earthLaps.toFixed(2)}
+                      <small> 周分 🌏</small>
+                    </span>
+                  </div>
+                  <p className="distance-note">
+                    東京から訪れた国の首都までの直線距離で計算しています（地球1周＝40,075 km）
+                  </p>
+                </div>
+              </>
             }
+            tripNoteOf={(trip) => `移動距離 約${formatKm(tripDistanceKm(trip))}`}
             renderMap={(props) => <WorldMap {...props} />}
           />
         )}

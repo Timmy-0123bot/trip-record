@@ -5,6 +5,8 @@ type Props<Id extends PlaceId> = {
   catalog: PlaceCatalog<Id>
   trips: TripRecord<Id>[]
   emptyMessage: string
+  // 記録ごとの補足（海外の移動距離など）。省略時は表示しない
+  noteOf?: (trip: TripRecord<Id>) => string
   onEdit: (trip: TripRecord<Id>) => void
   onDelete: (trip: TripRecord<Id>) => void
 }
@@ -24,6 +26,7 @@ export function TripList<Id extends PlaceId>({
   catalog,
   trips,
   emptyMessage,
+  noteOf,
   onEdit,
   onDelete,
 }: Props<Id>) {
@@ -46,6 +49,7 @@ export function TripList<Id extends PlaceId>({
           <p className="trip-prefs">
             {trip.placeIds.map((id) => labelOf(catalog, id)).join('・')}
           </p>
+          {noteOf && <p className="trip-note">{noteOf(trip)}</p>}
           {trip.memo && <p className="trip-memo">{trip.memo}</p>}
           <div className="trip-actions">
             <button className="secondary" onClick={() => onEdit(trip)}>

@@ -450,6 +450,29 @@ button.link:hover {
   color: var(--muted);
 }
 
+/* 海外の総移動距離 */
+.distance {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.distance-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.trip-note {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .regions-visited {
   grid-column: 1 / -1;
   margin: 0;
