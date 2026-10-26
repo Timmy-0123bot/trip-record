@@ -764,6 +764,159 @@ button.link:hover {
   line-height: 1;
 }
 
+/* 年ごとのまとめ */
+.year-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.year-intro,
+.year-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.year-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.year-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+}
+
+.year-head h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.year-total {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.year-row {
+  display: grid;
+  grid-template-columns: 5.5em minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.year-row-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.year-row-count {
+  font-size: 0.75rem;
+  font-weight: normal;
+  color: var(--muted);
+}
+
+.year-places {
+  display: flex;
+  flex-wrap: wrap;
+  /* 左の見出し（2行）の高さに合わせてチップが縦に伸びないようにする */
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.year-places li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--pref-fill);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* その年に初めて訪れた場所 */
+.year-places li.first {
+  background: var(--visited);
+  color: #fff;
+}
+
+.first-badge {
+  padding: 0 5px;
+  line-height: 1.4;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--accent-strong);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.year-distance {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.year-trips {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.year-trips li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-size: 0.9rem;
+}
+
+.year-trip-date {
+  min-width: 6.5em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.kind-badge {
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.kind-badge.overseas {
+  border-color: var(--visited);
+  color: var(--accent-strong);
+}
+
+.year-trip-title {
+  font-weight: 600;
+}
+
+.year-trip-places {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 /* 「行ったことがある」の印だけの場所の一覧 */
 .marked-places {
   margin-top: 20px;

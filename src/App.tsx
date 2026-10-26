@@ -3,6 +3,7 @@ import { BackupPanel } from './components/BackupPanel'
 import { JapanMap } from './components/JapanMap'
 import { TravelView } from './components/TravelView'
 import { WorldMap } from './components/WorldMap'
+import { YearView } from './components/YearView'
 import type { BackupData } from './backup'
 import { COUNTRIES, overseasCatalog } from './countries'
 import { EARTH_CIRCUMFERENCE_KM, formatKm, totalDistanceKm, tripDistanceKm } from './distance'
@@ -11,11 +12,12 @@ import { domesticCatalog } from './prefectures'
 import { DOMESTIC_STORE, OVERSEAS_STORE, usePlaceRecords } from './records'
 import { SAMPLE_DOMESTIC_STORE, SAMPLE_OVERSEAS_STORE } from './sample'
 
-type Tab = 'domestic' | 'overseas'
+type Tab = 'domestic' | 'overseas' | 'yearly'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'domestic', label: '国内' },
   { id: 'overseas', label: '海外' },
+  { id: 'yearly', label: '年ごと' },
 ]
 
 // 最後に開いていたタブを覚えておく（このブラウザだけの表示設定）
@@ -23,7 +25,8 @@ const TAB_KEY = 'trip-record:ui:tab'
 
 function loadTab(): Tab {
   try {
-    return localStorage.getItem(TAB_KEY) === 'overseas' ? 'overseas' : 'domestic'
+    const saved = localStorage.getItem(TAB_KEY)
+    return TABS.some((t) => t.id === saved) ? (saved as Tab) : 'domestic'
   } catch {
     return 'domestic'
   }
@@ -126,7 +129,7 @@ function Workspace({ sampleMode, onTrySample }: WorkspaceProps) {
             showUnvisitedList
             renderMap={(props) => <JapanMap {...props} />}
           />
-        ) : (
+        ) : tab === 'overseas' ? (
           <TravelView
             key="overseas"
             catalog={overseasCatalog}
@@ -171,6 +174,8 @@ function Workspace({ sampleMode, onTrySample }: WorkspaceProps) {
             tripNoteOf={(trip) => `移動距離 約${formatKm(tripDistanceKm(trip))}`}
             renderMap={(props) => <WorldMap {...props} />}
           />
+        ) : (
+          <YearView domesticTrips={domestic.trips} overseasTrips={overseas.trips} />
         )}
       </div>
 
