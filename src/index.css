@@ -395,10 +395,6 @@ button.link:hover {
   fill: var(--visited);
 }
 
-.pref.marked {
-  fill: var(--marked);
-}
-
 /* 世界地図 */
 .world-map-wrap {
   position: relative;
@@ -434,10 +430,6 @@ button.link:hover {
 
 .world-map .pref.dot.visited {
   fill: var(--visited);
-}
-
-.world-map .pref.dot.marked {
-  fill: var(--marked);
 }
 
 .world-map .pref.selected,
@@ -580,10 +572,6 @@ button.link:hover {
 
 .swatch.visited {
   background: var(--visited);
-}
-
-.swatch.marked {
-  background: var(--marked);
 }
 
 /* 旅行一覧 */

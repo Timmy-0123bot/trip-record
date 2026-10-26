@@ -71,7 +71,8 @@ type Props = {
 
 function statusOf(id: number, tripIds: Set<number>, markedIds: Set<number>) {
   if (tripIds.has(id)) return { className: 'visited', label: '旅行記録あり' }
-  if (markedIds.has(id)) return { className: 'marked', label: '行ったことがある' }
+  // 旅行記録の有無にかかわらず、訪問済みは同じ色で表す（読み上げでは区別する）
+  if (markedIds.has(id)) return { className: 'visited', label: '行ったことがある' }
   return { className: '', label: '未訪問' }
 }
 

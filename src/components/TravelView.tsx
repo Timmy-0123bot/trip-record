@@ -204,11 +204,7 @@ export function TravelView<Id extends PlaceId>({
           <ul className="legend">
             <li>
               <span className="swatch visited" />
-              旅行記録あり
-            </li>
-            <li>
-              <span className="swatch marked" />
-              行ったことがある
+              訪問済み
             </li>
             <li>
               <span className="swatch" />
